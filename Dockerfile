@@ -1,7 +1,7 @@
 # Use the official Nginx image as the base image
 FROM nginx:latest
 
-# Install Python 3 and dependencies
+# Install Python and dependencies
 RUN apt-get update && apt-get install -y \
     python3 \
     python3-pip \
@@ -12,6 +12,9 @@ RUN apt-get update && apt-get install -y \
 # Create a virtual environment using Python 3
 RUN python3 -m venv /app/venv
 
+# Verify the virtual environment
+RUN ls /app/venv/bin
+
 # Copy the Nginx configuration file
 COPY nginx.conf /etc/nginx/nginx.conf
 
@@ -20,8 +23,8 @@ COPY . /app
 WORKDIR /app
 
 # Install Python dependencies in the virtual environment
-RUN /app/venv/bin/pip install --upgrade pip && \
-    /app/venv/bin/pip install -r requirements.txt
+RUN /app/venv/bin/python3 -m pip install --upgrade pip && \
+    /app/venv/bin/python3 -m pip install -r requirements.txt
 
 # Expose port 80 for Nginx
 EXPOSE 80
