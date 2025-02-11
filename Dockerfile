@@ -1,10 +1,16 @@
 # Use the official Nginx image as the base image
 FROM nginx:latest
 
-# Install Python and dependencies
+# Install Python 3 and dependencies
 RUN apt-get update && apt-get install -y \
     python3 \
-    python3-pip
+    python3-pip \
+    python3-venv \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create a virtual environment using Python 3
+RUN python3 -m venv /app/venv
 
 # Copy the Nginx configuration file
 COPY nginx.conf /etc/nginx/nginx.conf
@@ -13,11 +19,12 @@ COPY nginx.conf /etc/nginx/nginx.conf
 COPY . /app
 WORKDIR /app
 
-# Install Python dependencies
-RUN pip3 install -r requirements.txt
+# Install Python dependencies in the virtual environment
+RUN /app/venv/bin/pip install --upgrade pip && \
+    /app/venv/bin/pip install -r requirements.txt
 
 # Expose port 80 for Nginx
 EXPOSE 80
 
 # Start Nginx and the FastAPI application
-CMD service nginx start && uvicorn main:app --host 0.0.0.0 --port 8000
+CMD service nginx start && /app/venv/bin/uvicorn main:app --host 0.0.0.0 --port 8000
